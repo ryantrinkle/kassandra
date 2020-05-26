@@ -4,6 +4,7 @@ module Frontend.MainWidget
   )
 where
 
+import Control.Concurrent (threadDelay)
 import qualified Reflex.Dom                    as D
 import qualified Reflex                        as R
 import qualified Data.HashMap.Strict           as HashMap
@@ -26,7 +27,8 @@ import           Frontend.TaskWidget            ( taskTreeWidget )
 import           Frontend.TextEditWidget        ( createTextWidget )
 import           Frontend.BaseWidgets           ( button )
 import           Frontend.Util                  ( tellNewTask )
-import           Common.Debug                   ( logR, logRShow
+import           Common.Debug                   ( logR
+                                                , logRShow
                                                 , log
                                                 , pattern I
                                                 , pattern D
@@ -38,27 +40,43 @@ mainWidget stateProvider = do
   log I "Loaded Mainwidget"
   time    <- liftIO getZonedTime
   timeDyn <-
-     (\x -> logR D x (const "timeTick"))
+    (logR D (const "timeTick"))
     =<< fmap
           (utcToZonedTime (zonedTimeZone time) . (^. lensVL R.tickInfo_lastUTC))
     <$> R.clockLossy 1 (zonedTimeToUTC time)
   let filterState = R.constDyn (FilterState 0 60)
+--  (_,event) <- R.runEventWriterT $ do
+--    R.tellEvent =<<
+  event <- logR D (const "Click Event")
+               =<<
+              ("Click" <$)
+               <$> D.button "Create"
+  countDyn <- R.count event
+  D.dynText $ show <$> countDyn
+  D.dynText $ show <$> timeDyn
+
   rec let (appChangeEvents, dataChangeEvents) =
             R.fanThese $ partitionEithersNE <$> stateChanges
-      taskState <- stateProvider dataChangeEvents
-      dragDyn   <- R.holdDyn NoDrag $ last <$> appChangeEvents
+      --taskState <- stateProvider dataChangeEvents
+      let taskState = R.constDyn mempty
+      dragDyn <- R.holdDyn NoDrag $ last <$> appChangeEvents
       (_, stateChanges' :: R.Event t (NonEmpty AppStateChange)) <-
         R.runEventWriterT $ runReaderT
           (do
+            tellNewTask
+               =<< logR D (const "Creating Task")
+               =<< fmap (, id)
+               <$> ("Click" <$)
+               <$> D.button "Create"
             taskDiagnosticsWidget
             D.divClass "container" $ do
               D.divClass "pane" widgetSwitcher
               D.divClass "pane" (listWidget $ R.constDyn (TagList "root"))
           )
-          (AppState taskState timeDyn dragDyn filterState)
-      stateChanges <- logR I stateChanges' (const "StateChange")
+          (AppState taskState (R.constDyn time) dragDyn filterState)
+      stateChanges <- logR I (const "StateChange") stateChanges'
   D.divClass "footer"
-    $ D.text
+     $ D.text
         "Powered by taskwarrior, Haskell and reflex-frp -- AGPL Licensed -- Malte Brandy -- 2019 - 2020"
 
 taskDiagnosticsWidget :: (StandardWidget t m r e) => m ()
@@ -85,8 +103,15 @@ widgets =
 
 widgetSwitcher :: forall t m r e . StandardWidget t m r e => m ()
 widgetSwitcher = D.el "div" $ do
-  tellNewTask =<< fmap (, id) <$> createTextWidget
-    (button "selector" $ D.text "New Task")
+  tellNewTask
+    =<< logR D (const "Creating Task")
+    =<< fmap (, id)
+    <$> ("Click" <$)
+    <$> D.button "Create"
+  tellNewTask
+    =<< logR D (const "Creating Task")
+    =<< fmap (, id)
+    <$> createTextWidget (button "selector" $ D.text "New Task")
   buttons <- forM (widgets @t @m) $ \l ->
     (l <$) . D.domEvent D.Click . fst <$> D.elClass' "a"
                                                      "selector"
