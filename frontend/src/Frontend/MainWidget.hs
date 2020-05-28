@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# OPTIONS_GHC -ddump-simpl -ddump-to-file #-}
 module Frontend.MainWidget
   ( mainWidget
   )
@@ -33,6 +34,12 @@ import           Common.Debug                   ( logR
                                                 , pattern I
                                                 , pattern D
                                                 )
+import Data.Time.Clock
+import System.IO.Unsafe
+
+{-# NOINLINE blah #-}
+blah :: R.Reflex t => R.Dynamic t UTCTime
+blah = pure $ unsafePerformIO getCurrentTime
 
 mainWidget :: WidgetIO t m => StateProvider t m -> m ()
 mainWidget stateProvider = do
@@ -42,15 +49,15 @@ mainWidget stateProvider = do
   timeDyn <-
     (logR D (const "timeTick"))
     =<< fmap
-          (utcToZonedTime (zonedTimeZone time) . (^. lensVL R.tickInfo_lastUTC))
-    <$> R.clockLossy 1 (zonedTimeToUTC time)
+          (utcToZonedTime (zonedTimeZone time))
+    <$> pure blah
   let filterState = R.constDyn (FilterState 0 60)
 --  (_,event) <- R.runEventWriterT $ do
 --    R.tellEvent =<<
   event <- logR D (const "Click Event")
                =<<
               ("Click" <$)
-               <$> D.button "Create"
+               <$> D.button "Create1"
   countDyn <- R.count event
   D.dynText $ show <$> countDyn
   D.dynText $ show <$> timeDyn
@@ -67,14 +74,14 @@ mainWidget stateProvider = do
                =<< logR D (const "Creating Task")
                =<< fmap (, id)
                <$> ("Click" <$)
-               <$> D.button "Create"
+               <$> D.button "Create2"
             taskDiagnosticsWidget
             D.divClass "container" $ do
               D.divClass "pane" widgetSwitcher
               D.divClass "pane" (listWidget $ R.constDyn (TagList "root"))
           )
           (AppState taskState (R.constDyn time) dragDyn filterState)
-      stateChanges <- logR I (const "StateChange") stateChanges'
+      stateChanges <- pure $ R.traceEventWith (const "StateChange") stateChanges'
   D.divClass "footer"
      $ D.text
         "Powered by taskwarrior, Haskell and reflex-frp -- AGPL Licensed -- Malte Brandy -- 2019 - 2020"
@@ -107,7 +114,7 @@ widgetSwitcher = D.el "div" $ do
     =<< logR D (const "Creating Task")
     =<< fmap (, id)
     <$> ("Click" <$)
-    <$> D.button "Create"
+    <$> D.button "Create3"
   tellNewTask
     =<< logR D (const "Creating Task")
     =<< fmap (, id)

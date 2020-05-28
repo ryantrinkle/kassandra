@@ -1,8 +1,8 @@
 {
   "owner": "obsidiansystems",
   "repo": "obelisk",
-  "branch": "eac@fix-custom-prelude-ob-profile",
+  "branch": "kassandra-test",
   "private": false,
-  "rev": "33f61ab391976ad68e0b37a08e6c246f4fdfd802",
-  "sha256": "0x227cb1cs2f3ffxz7b2q43xnl1jdnh09jhj5pxw3zhnjacyla18"
+  "rev": "f37e22f2076568a78295e80eeb220c82cdbfa35d",
+  "sha256": "0cn2i4d96mi6v1krl64kp5a2rc8x5fr9dx40kng1z96f6z1wcnd8"
 }

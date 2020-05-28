@@ -50,9 +50,11 @@ instance R.Reflex t => ReflexLoggable (R.Dynamic t a) a where
 instance R.Reflex t => ReflexLoggable (R.Event t a) a where
   useLogString f e = traceEventWith (toString . f "triggered Event") e
 
+{-# NOINLINE logLevel #-}
 logLevel :: MVar (Maybe Severity)
 logLevel = unsafePerformIO . newMVar $ Just W
 
+{-# NOINLINE traceID #-}
 traceID :: MVar Int
 traceID = unsafePerformIO . newMVar $ 0
 
@@ -67,7 +69,7 @@ logR
   -> m l
 logR severity decorate loggable = do
   isSevere <- severeEnough severity
-  if isSevere
+  if True -- isSevere
     then do
       myId <- liftIO $ modifyMVar traceID $ \a -> pure (succ a, a)
       withFrozenCallStack $ log D ("Registering eventTrace " <> show myId)
