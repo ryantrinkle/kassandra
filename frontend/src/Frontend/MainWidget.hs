@@ -23,10 +23,6 @@ import           Common.Debug                   ( logR
 import Data.Time.Clock
 import System.IO.Unsafe
 
-{-# NOINLINE blah #-}
-blah :: R.Reflex t => R.Dynamic t UTCTime
-blah = pure $ unsafePerformIO getCurrentTime
-
 mainWidget :: WidgetIO t m => m ()
 mainWidget = do
   time    <- liftIO getZonedTime
@@ -44,14 +40,13 @@ mainWidget = do
                =<< fmap (, id)
                <$> ("Click" <$)
                <$> D.button "Create2"
-            D.divClass "container" $ do
-              D.divClass "pane" (listWidget $ pure ())
-              D.divClass "pane" (listWidget $ pure ())
-              D.divClass "pane" (listWidget $ pure ())
-              D.divClass "pane" (listWidget $ pure ())
-              D.divClass "pane" (listWidget $ pure ())
-              D.divClass "pane" (listWidget $ pure ())
-              D.divClass "pane" (listWidget $ pure ())
+            listWidget $ pure ()
+            listWidget $ pure ()
+            listWidget $ pure ()
+            listWidget $ pure ()
+            listWidget $ pure ()
+            listWidget $ pure ()
+            listWidget $ pure ()
           )
           (AppState taskState (R.constDyn time) dragDyn filterState)
       stateChanges <- pure $ R.traceEventWith (const "StateChange") stateChanges'
