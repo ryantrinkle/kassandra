@@ -7,10 +7,9 @@ where
 import qualified Reflex.Dom                    as D
 import qualified Reflex                        as R
 import           Frontend.Types                 ( DragState(NoDrag)
-                                                , WidgetIO
                                                 )
 
-mainWidget :: WidgetIO t m => m ()
+mainWidget :: (D.DomBuilder t m, MonadFix m, R.PostBuild t m, R.MonadHold t m) => m ()
 mainWidget = do
   rec let (appChangeEvents, _) =
             R.fanThese $ partitionEithersNE <$> stateChanges
