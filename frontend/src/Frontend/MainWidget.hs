@@ -16,21 +16,15 @@ import           Frontend.Types                 ( DragState(NoDrag)
                                                 )
 import           Frontend.Util                  ( tellNewTask )
 import           Common.Debug                   ( logR
-                                                , log
-                                                , pattern I
                                                 , pattern D
                                                 )
-import Data.Time.Clock
-import System.IO.Unsafe
 
 mainWidget :: WidgetIO t m => m ()
 mainWidget = do
   time    <- liftIO getZonedTime
-  let filterState = R.constDyn (FilterState 0 60)
 
-  rec let (appChangeEvents, dataChangeEvents) =
+  rec let (appChangeEvents, _) =
             R.fanThese $ partitionEithersNE <$> stateChanges
-      let taskState = R.constDyn mempty
       dragDyn <- R.holdDyn NoDrag $ last <$> appChangeEvents
       (_, stateChanges' :: R.Event t (NonEmpty AppStateChange)) <-
         R.runEventWriterT $ runReaderT
@@ -48,7 +42,7 @@ mainWidget = do
             listWidget $ pure ()
             listWidget $ pure ()
           )
-          (AppState taskState (R.constDyn time) dragDyn filterState)
+          (AppState (pure mempty) (pure time) dragDyn (pure (FilterState 0 60)))
       stateChanges <- pure $ R.traceEventWith (const "StateChange") stateChanges'
   pure ()
 
