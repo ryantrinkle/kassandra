@@ -14,7 +14,6 @@ import           Frontend.Types                 ( DragState(NoDrag)
                                                 , StandardWidget
                                                 , getDragState
                                                 )
-import           Frontend.State                 ( StateProvider )
 import           Frontend.Util                  ( tellNewTask )
 import           Common.Debug                   ( logR
                                                 , log
@@ -28,9 +27,8 @@ import System.IO.Unsafe
 blah :: R.Reflex t => R.Dynamic t UTCTime
 blah = pure $ unsafePerformIO getCurrentTime
 
-mainWidget :: WidgetIO t m => StateProvider t m -> m ()
-mainWidget _ = do
-  D.divClass "header" $ D.text "Kassandra Taskmanagement"
+mainWidget :: WidgetIO t m => m ()
+mainWidget = do
   log I "Loaded Mainwidget"
   time    <- liftIO getZonedTime
   timeDyn <-
@@ -70,9 +68,7 @@ mainWidget _ = do
           )
           (AppState taskState (R.constDyn time) dragDyn filterState)
       stateChanges <- pure $ R.traceEventWith (const "StateChange") stateChanges'
-  D.divClass "footer"
-     $ D.text
-        "Powered by taskwarrior, Haskell and reflex-frp -- AGPL Licensed -- Malte Brandy -- 2019 - 2020"
+  pure ()
 
 listWidget
   :: forall t m r e . StandardWidget t m r e => R.Dynamic t () -> m ()

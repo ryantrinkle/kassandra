@@ -21,6 +21,5 @@ standalone = do
   callbackSlot <- newEmptyMVar
   race_
     (ioStateFeeder callbackSlot)
-    (D.mainWidgetWithCss (encodeUtf8 css) $ mainWidget $ ioStateProvider
-      callbackSlot
+    (D.mainWidgetWithCss (encodeUtf8 css) $ mainWidget
     )
