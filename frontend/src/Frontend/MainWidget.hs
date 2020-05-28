@@ -1,5 +1,4 @@
 {-# LANGUAGE PatternSynonyms #-}
-{-# OPTIONS_GHC -ddump-simpl -ddump-to-file #-}
 module Frontend.MainWidget
   ( mainWidget
   )

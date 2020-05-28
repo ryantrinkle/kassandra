@@ -31,6 +31,7 @@ import           Frontend.Types                 ( getExpandedTasks
                                                 , TaskInfos
                                                 , AppState
                                                 , getAppState
+                                                , getDragState
                                                 , al
                                                 , fl
                                                 )
@@ -249,13 +250,10 @@ taskList
   -> R.Dynamic t [UUID]
   -> (R.Dynamic t TaskInfos -> m ())
   -> m ()
-taskList mode childrenD blacklistD elementWidget = do
-  let partialSortPosition =
-        SortPosition mode (childrenD ^. al (al #task) % #current)
-  let ignoreD = (^.. folded) . lastOf folded <$> childrenD ^. #uuid
-  childDropArea (partialSortPosition (R.constant Nothing))
-                (ignoreD <> blacklistD)
-    $ pure ()
+taskList mode childrenD _ _ = do
+  dragStateD <- getDragState
+  let dropActive = fmap (\_ -> ()) dragStateD
+  D.dyn_ $ dropActive <&> const pass
 
 
 waitWidget :: forall t m r e . TaskWidget t m r e => m ()

@@ -15,6 +15,7 @@ import           Frontend.Types                 ( al
                                                 , TaskState
                                                 , Widget
                                                 , getTasks
+                                                , getDragState
                                                 )
 import           Frontend.Util                  ( filterCurrent )
 import           Frontend.TaskWidget            ( taskList
@@ -59,14 +60,11 @@ listsWidget = do
 
 listWidget
   :: forall t m r e . StandardWidget t m r e => R.Dynamic t TaskList -> m ()
-listWidget list = D.dyn_ (innerRenderList <$> list)
+listWidget list = D.dyn_ (innerRenderList <$ list)
  where
-  innerRenderList :: TaskList -> m ()
-  innerRenderList list'
-    | TagList tag <- list'
+  innerRenderList :: m ()
+  innerRenderList
     = do
-      let sortMode = SortModeTag tag
-      taskList (R.constant sortMode)
-               (pure [])
-               (R.constDyn [])
-               (const $ pure ())
+      dragStateD <- getDragState
+      let dropActive = fmap (\_ -> ()) dragStateD
+      D.dyn_ $ dropActive <&> const pass

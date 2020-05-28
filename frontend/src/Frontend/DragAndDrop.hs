@@ -23,6 +23,7 @@ import           Frontend.Types                 ( AppStateChange
                                                 , getDragState
                                                 , DataChange
                                                 , WriteApp
+                                                , TaskState
                                                 )
 import           Frontend.Util                  ( tellSingleton
                                                 , lookupTask
@@ -34,37 +35,17 @@ tellDragTask = tellSingleton . fmap
   ((_Typed @AppStateChange % _Typed @DragState #) . maybe NoDrag DraggedTask) <=< logRShow I
 
 taskDropArea
-  :: StandardWidget t m r e
+  :: forall t m r e
+  .  StandardWidget t m r e
   => R.Dynamic t [UUID]
   -> m ()
   -> (R.Event t TaskInfos -> R.Event t [Task])
   -> m ()
 taskDropArea blacklistD areaW handler = do
-  tasksD     <- getTasks
+  tasksD :: D.Dynamic t TaskState <- getTasks
   dragStateD <- getDragState
-  let dropActive = do
-        dragState <- dragStateD
-        blacklist <- blacklistD
-        let retval
-              | DraggedTask draggedUuid <- dragState
-              , draggedUuid `notElem` blacklist
-              = Just draggedUuid
-              | otherwise
-              = Nothing
-        pure retval
-  D.dyn_ $ dropActive <&> \case
-    Just draggedUuid -> do
-      dropEl <- fmap fst <$> D.element "span" droppableElementConfig $ areaW
-      let event = D.domEvent D.Drop dropEl
-      tellSingleton $ (_Typed @AppStateChange % _Typed # NoDrag) <$ event
-      let droppedTaskEvent = R.attachWithMaybe
-            (const . flip lookupTask draggedUuid)
-            (R.current tasksD)
-            event
-      R.tellEvent
-        $   fmap (_Typed @AppStateChange % _Typed @DataChange % #_ChangeTask #)
-        <$> R.fmapMaybe nonEmpty (handler droppedTaskEvent)
-    Nothing -> pass
+  let dropActive = fmap (\_ -> ()) dragStateD
+  D.dyn_ $ dropActive <&> const pass
 
 childDropArea
   :: StandardWidget t m r e
@@ -74,8 +55,7 @@ childDropArea
   -> m ()
 childDropArea pos blacklistD areaW =
   taskDropArea blacklistD areaW
-    $ saveSorting (pos ^. #mode) (pos ^. #list)
-    . R.attachWith (\u t -> (t ^. #task, u)) (pos ^. #before)
+    $ const R.never
 
 
 droppableElementConfig
