@@ -17,10 +17,9 @@ import           Frontend.Types                 ( DragState(NoDrag)
                                                 , WidgetIO
                                                 , StandardWidget
                                                 , TaskState
+                                                , getDragState
                                                 )
-import           Frontend.ListWidget            ( listsWidget
-                                                , listWidget
-                                                , TaskList(TagList)
+import           Frontend.ListWidget            ( TaskList(TagList)
                                                 )
 import           Frontend.State                 ( StateProvider )
 import           Frontend.TaskWidget            ( taskTreeWidget )
@@ -74,7 +73,6 @@ mainWidget stateProvider = do
                =<< fmap (, id)
                <$> ("Click" <$)
                <$> D.button "Create2"
-            --taskDiagnosticsWidget
             D.divClass "container" $ do
               D.divClass "pane" (listWidget $ R.constDyn (TagList "root"))
               D.divClass "pane" (listWidget $ R.constDyn (TagList "root"))
@@ -89,6 +87,17 @@ mainWidget stateProvider = do
   D.divClass "footer"
      $ D.text
         "Powered by taskwarrior, Haskell and reflex-frp -- AGPL Licensed -- Malte Brandy -- 2019 - 2020"
+
+listWidget
+  :: forall t m r e . StandardWidget t m r e => R.Dynamic t TaskList -> m ()
+listWidget list = D.dyn_ (innerRenderList <$ list)
+ where
+  innerRenderList :: m ()
+  innerRenderList
+    = do
+      dragStateD <- getDragState
+      let dropActive = fmap (\_ -> ()) dragStateD
+      D.dyn_ $ dropActive <&> const pass
 
 taskDiagnosticsWidget :: (StandardWidget t m r e) => m ()
 taskDiagnosticsWidget = do
@@ -107,7 +116,6 @@ taskDiagnosticsWidget = do
 widgets :: StandardWidget t m r e => [(Text, m ())]
 widgets =
   [ ("Next"    , nextWidget)
-  , ("Lists"   , listsWidget)
   , ("Inbox"   , inboxWidget)
   , ("Unsorted", unsortedWidget)
   ]
