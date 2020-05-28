@@ -4,6 +4,8 @@ module Frontend.MainWidget
   )
 where
 
+import Prelude (MonadFix, NonEmpty, Either (..), const, pure, (<$), ($), pass, void, (.), fmap, last, (=<<), partitionEithersNE, (<$>), one)
+
 import qualified Reflex.Dom                    as D
 import qualified Reflex as R
 import qualified Reflex.Network as R
