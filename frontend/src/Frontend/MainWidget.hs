@@ -5,7 +5,8 @@ module Frontend.MainWidget
 where
 
 import qualified Reflex.Dom                    as D
-import qualified Reflex                        as R
+import qualified Reflex as R
+import qualified Reflex.Network as R
 
 mainWidget :: (D.DomBuilder t m, MonadFix m, R.PostBuild t m, R.MonadHold t m) => m ()
 mainWidget = do
@@ -18,13 +19,13 @@ mainWidget = do
             R.tellEvent . fmap one
                . fmap (\_ -> Right ()) . R.traceEventWith (const "Creating Task2")
                =<< D.button "Create2"
-            D.dyn_ ((D.dyn_ $ pass <$ dragDyn) <$ pure ())
-            D.dyn_ ((D.dyn_ $ pass <$ dragDyn) <$ pure ())
-            D.dyn_ ((D.dyn_ $ pass <$ dragDyn) <$ pure ())
-            D.dyn_ ((D.dyn_ $ pass <$ dragDyn) <$ pure ())
-            D.dyn_ ((D.dyn_ $ pass <$ dragDyn) <$ pure ())
-            D.dyn_ ((D.dyn_ $ pass <$ dragDyn) <$ pure ())
-            D.dyn_ ((D.dyn_ $ pass <$ dragDyn) <$ pure ())
+            void $ R.networkView $ (void $ R.networkView $ pass <$ dragDyn) <$ pure ()
+            void $ R.networkView $ (void $ R.networkView $ pass <$ dragDyn) <$ pure ()
+            void $ R.networkView $ (void $ R.networkView $ pass <$ dragDyn) <$ pure ()
+            void $ R.networkView $ (void $ R.networkView $ pass <$ dragDyn) <$ pure ()
+            void $ R.networkView $ (void $ R.networkView $ pass <$ dragDyn) <$ pure ()
+            void $ R.networkView $ (void $ R.networkView $ pass <$ dragDyn) <$ pure ()
+            void $ R.networkView $ (void $ R.networkView $ pass <$ dragDyn) <$ pure ()
           )
       stateChanges <- pure $ R.traceEventWith (const "StateChange") stateChanges'
   pure ()
