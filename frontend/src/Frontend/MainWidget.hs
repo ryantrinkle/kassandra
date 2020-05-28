@@ -14,8 +14,6 @@ import           Frontend.Types                 ( DragState(NoDrag)
                                                 , StandardWidget
                                                 , getDragState
                                                 )
-import           Frontend.ListWidget            ( TaskList(TagList)
-                                                )
 import           Frontend.State                 ( StateProvider )
 import           Frontend.Util                  ( tellNewTask )
 import           Common.Debug                   ( logR
@@ -62,13 +60,13 @@ mainWidget _ = do
                <$> ("Click" <$)
                <$> D.button "Create2"
             D.divClass "container" $ do
-              D.divClass "pane" (listWidget $ R.constDyn (TagList "root"))
-              D.divClass "pane" (listWidget $ R.constDyn (TagList "root"))
-              D.divClass "pane" (listWidget $ R.constDyn (TagList "root"))
-              D.divClass "pane" (listWidget $ R.constDyn (TagList "root"))
-              D.divClass "pane" (listWidget $ R.constDyn (TagList "root"))
-              D.divClass "pane" (listWidget $ R.constDyn (TagList "root"))
-              D.divClass "pane" (listWidget $ R.constDyn (TagList "root"))
+              D.divClass "pane" (listWidget $ pure ())
+              D.divClass "pane" (listWidget $ pure ())
+              D.divClass "pane" (listWidget $ pure ())
+              D.divClass "pane" (listWidget $ pure ())
+              D.divClass "pane" (listWidget $ pure ())
+              D.divClass "pane" (listWidget $ pure ())
+              D.divClass "pane" (listWidget $ pure ())
           )
           (AppState taskState (R.constDyn time) dragDyn filterState)
       stateChanges <- pure $ R.traceEventWith (const "StateChange") stateChanges'
@@ -77,7 +75,7 @@ mainWidget _ = do
         "Powered by taskwarrior, Haskell and reflex-frp -- AGPL Licensed -- Malte Brandy -- 2019 - 2020"
 
 listWidget
-  :: forall t m r e . StandardWidget t m r e => R.Dynamic t TaskList -> m ()
+  :: forall t m r e . StandardWidget t m r e => R.Dynamic t () -> m ()
 listWidget list = D.dyn_ (innerRenderList <$ list)
  where
   innerRenderList :: m ()
