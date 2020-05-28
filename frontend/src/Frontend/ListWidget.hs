@@ -63,31 +63,10 @@ listWidget list = D.dyn_ (innerRenderList <$> list)
  where
   innerRenderList :: TaskList -> m ()
   innerRenderList list'
-    | UUIDList uuids <- list'
-    = do
-      tasks <- getTasks
-      void
-        . D.simpleList
-            ((\tasks' -> mapMaybe (`HashMap.lookup` tasks') uuids) <$> tasks)
-        $ taskTreeWidget
     | TagList tag <- list'
     = do
-      D.text tag
-      tasks     <- getTasks
-      showTasks <- filterCurrent $ tasksToShow tag <$> tasks
       let sortMode = SortModeTag tag
       taskList (R.constant sortMode)
-               (sortTasks sortMode <$> showTasks)
+               (pure [])
                (R.constDyn [])
-               taskTreeWidget
-    | SubList sublists <- list'
-    = void . D.simpleList (D.constDyn sublists) $ listWidget
-
-  tasksToShow :: Text -> TaskState -> [TaskInfos]
-  tasksToShow tag = mapMaybe maybePredicate . HashMap.elems
-   where
-    maybePredicate :: TaskInfos -> Maybe TaskInfos
-    maybePredicate taskInfo =
-      if inList taskInfo then Just taskInfo else Nothing
-    inList :: TaskInfos -> Bool
-    inList = (tag `elem`) . (^. #tags)
+               (const $ pure ())

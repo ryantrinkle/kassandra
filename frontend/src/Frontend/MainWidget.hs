@@ -71,13 +71,18 @@ mainWidget stateProvider = do
         R.runEventWriterT $ runReaderT
           (do
             tellNewTask
-               =<< logR D (const "Creating Task")
+               =<< logR D (const "Creating Task2")
                =<< fmap (, id)
                <$> ("Click" <$)
                <$> D.button "Create2"
-            taskDiagnosticsWidget
+            --taskDiagnosticsWidget
             D.divClass "container" $ do
-              D.divClass "pane" widgetSwitcher
+              D.divClass "pane" (listWidget $ R.constDyn (TagList "root"))
+              D.divClass "pane" (listWidget $ R.constDyn (TagList "root"))
+              D.divClass "pane" (listWidget $ R.constDyn (TagList "root"))
+              D.divClass "pane" (listWidget $ R.constDyn (TagList "root"))
+              D.divClass "pane" (listWidget $ R.constDyn (TagList "root"))
+              D.divClass "pane" (listWidget $ R.constDyn (TagList "root"))
               D.divClass "pane" (listWidget $ R.constDyn (TagList "root"))
           )
           (AppState taskState (R.constDyn time) dragDyn filterState)
