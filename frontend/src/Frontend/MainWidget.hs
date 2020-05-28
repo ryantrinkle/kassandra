@@ -6,15 +6,13 @@ where
 
 import qualified Reflex.Dom                    as D
 import qualified Reflex                        as R
-import           Frontend.Types                 ( DragState(NoDrag)
-                                                )
 
 mainWidget :: (D.DomBuilder t m, MonadFix m, R.PostBuild t m, R.MonadHold t m) => m ()
 mainWidget = do
   rec let (appChangeEvents, _) =
             R.fanThese $ partitionEithersNE <$> stateChanges
-      dragDyn <- R.holdDyn NoDrag $ last <$> appChangeEvents
-      (_, stateChanges' :: R.Event t (NonEmpty (Either DragState ()))) <-
+      dragDyn <- R.holdDyn () $ last <$> appChangeEvents
+      (_, stateChanges' :: R.Event t (NonEmpty (Either () ()))) <-
         R.runEventWriterT
           (do
             R.tellEvent . fmap one
