@@ -29,15 +29,8 @@ blah = pure $ unsafePerformIO getCurrentTime
 
 mainWidget :: WidgetIO t m => m ()
 mainWidget = do
-  log I "Loaded Mainwidget"
   time    <- liftIO getZonedTime
   let filterState = R.constDyn (FilterState 0 60)
-  event <- logR D (const "Click Event")
-               =<<
-              ("Click" <$)
-               <$> D.button "Create1"
-  countDyn <- R.count event
-  D.dynText $ show <$> countDyn
 
   rec let (appChangeEvents, dataChangeEvents) =
             R.fanThese $ partitionEithersNE <$> stateChanges
