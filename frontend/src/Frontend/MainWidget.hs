@@ -12,8 +12,6 @@ import           Frontend.Types                 ( DragState(NoDrag)
                                                 , AppStateChange
                                                 , WidgetIO
                                                 , StandardWidget
-                                                , getDragState
-                                                , WriteApp
                                                 , DataChange
                                                 )
 
@@ -27,37 +25,23 @@ mainWidget = do
       (_, stateChanges' :: R.Event t (NonEmpty AppStateChange)) <-
         R.runEventWriterT $ runReaderT
           (do
-            tellNewTask . R.traceEventWith (const "Creating Task2")
+            R.tellEvent . fmap one
+               . fmap (_Typed @AppStateChange % _Typed @DataChange % #_CreateTask #) . R.traceEventWith (const "Creating Task2")
                =<< fmap (, id)
                <$> ("Click" <$)
                <$> D.button "Create2"
-            listWidget $ pure ()
-            listWidget $ pure ()
-            listWidget $ pure ()
-            listWidget $ pure ()
-            listWidget $ pure ()
-            listWidget $ pure ()
-            listWidget $ pure ()
+            listWidget dragDyn $ pure ()
+            listWidget dragDyn $ pure ()
+            listWidget dragDyn $ pure ()
+            listWidget dragDyn $ pure ()
+            listWidget dragDyn $ pure ()
+            listWidget dragDyn $ pure ()
+            listWidget dragDyn $ pure ()
           )
           (AppState (pure mempty) (pure time) dragDyn (pure (FilterState 0 60)))
       stateChanges <- pure $ R.traceEventWith (const "StateChange") stateChanges'
   pure ()
 
 listWidget
-  :: forall t m r e . StandardWidget t m r e => R.Dynamic t () -> m ()
-listWidget list = D.dyn_ (innerRenderList <$ list)
- where
-  innerRenderList :: m ()
-  innerRenderList
-    = do
-      dragStateD <- getDragState
-      let dropActive = fmap (\_ -> ()) dragStateD
-      D.dyn_ $ dropActive <&> const pass
-
-tellNewTask :: WriteApp t m e => R.Event t (Text, Task -> Task) -> m ()
-tellNewTask = tellSingleton
-  . fmap (_Typed @AppStateChange % _Typed @DataChange % #_CreateTask #)
-
-tellSingleton
-  :: (R.Reflex t, R.EventWriter t (NonEmpty event) m) => R.Event t event -> m ()
-tellSingleton = R.tellEvent . fmap one
+  :: forall t m r e . StandardWidget t m r e => R.Dynamic t DragState -> R.Dynamic t () -> m ()
+listWidget dragStateD list = D.dyn_ ((D.dyn_ $ pass <$ dragStateD) <$ list)
