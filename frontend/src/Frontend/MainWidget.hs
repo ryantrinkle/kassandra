@@ -31,11 +31,6 @@ mainWidget :: WidgetIO t m => m ()
 mainWidget = do
   log I "Loaded Mainwidget"
   time    <- liftIO getZonedTime
-  timeDyn <-
-    (logR D (const "timeTick"))
-    =<< fmap
-          (utcToZonedTime (zonedTimeZone time))
-    <$> pure blah
   let filterState = R.constDyn (FilterState 0 60)
   event <- logR D (const "Click Event")
                =<<
@@ -43,7 +38,6 @@ mainWidget = do
                <$> D.button "Create1"
   countDyn <- R.count event
   D.dynText $ show <$> countDyn
-  D.dynText $ show <$> timeDyn
 
   rec let (appChangeEvents, dataChangeEvents) =
             R.fanThese $ partitionEithersNE <$> stateChanges
