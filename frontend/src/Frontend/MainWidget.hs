@@ -23,7 +23,7 @@ mainWidget = do
             R.fanThese $ partitionEithersNE <$> stateChanges
       dragDyn <- R.holdDyn NoDrag $ last <$> appChangeEvents
       (_, stateChanges' :: R.Event t (NonEmpty AppStateChange)) <-
-        R.runEventWriterT $ runReaderT
+        R.runEventWriterT
           (do
             R.tellEvent . fmap one
                . fmap (_Typed @AppStateChange % _Typed @DataChange % #_CreateTask #) . R.traceEventWith (const "Creating Task2")
@@ -38,6 +38,5 @@ mainWidget = do
             D.dyn_ ((D.dyn_ $ pass <$ dragDyn) <$ pure ())
             D.dyn_ ((D.dyn_ $ pass <$ dragDyn) <$ pure ())
           )
-          (AppState (pure mempty) (pure time) dragDyn (pure (FilterState 0 60)))
       stateChanges <- pure $ R.traceEventWith (const "StateChange") stateChanges'
   pure ()
