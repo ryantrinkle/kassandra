@@ -13,10 +13,8 @@ import           Frontend.Types                 ( DragState(NoDrag)
                                                 , WidgetIO
                                                 , StandardWidget
                                                 , getDragState
-                                                )
-import           Frontend.Util                  ( tellNewTask )
-import           Common.Debug                   ( logR
-                                                , pattern D
+                                                , WriteApp
+                                                , DataChange
                                                 )
 
 mainWidget :: WidgetIO t m => m ()
@@ -29,8 +27,7 @@ mainWidget = do
       (_, stateChanges' :: R.Event t (NonEmpty AppStateChange)) <-
         R.runEventWriterT $ runReaderT
           (do
-            tellNewTask
-               =<< logR D (const "Creating Task2")
+            tellNewTask . R.traceEventWith (const "Creating Task2")
                =<< fmap (, id)
                <$> ("Click" <$)
                <$> D.button "Create2"
@@ -56,3 +53,11 @@ listWidget list = D.dyn_ (innerRenderList <$ list)
       dragStateD <- getDragState
       let dropActive = fmap (\_ -> ()) dragStateD
       D.dyn_ $ dropActive <&> const pass
+
+tellNewTask :: WriteApp t m e => R.Event t (Text, Task -> Task) -> m ()
+tellNewTask = tellSingleton
+  . fmap (_Typed @AppStateChange % _Typed @DataChange % #_CreateTask #)
+
+tellSingleton
+  :: (R.Reflex t, R.EventWriter t (NonEmpty event) m) => R.Event t event -> m ()
+tellSingleton = R.tellEvent . fmap one
