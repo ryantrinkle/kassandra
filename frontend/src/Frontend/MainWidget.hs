@@ -30,18 +30,14 @@ mainWidget = do
                =<< fmap (, id)
                <$> ("Click" <$)
                <$> D.button "Create2"
-            listWidget dragDyn $ pure ()
-            listWidget dragDyn $ pure ()
-            listWidget dragDyn $ pure ()
-            listWidget dragDyn $ pure ()
-            listWidget dragDyn $ pure ()
-            listWidget dragDyn $ pure ()
-            listWidget dragDyn $ pure ()
+            D.dyn_ ((D.dyn_ $ pass <$ dragDyn) <$ pure ())
+            D.dyn_ ((D.dyn_ $ pass <$ dragDyn) <$ pure ())
+            D.dyn_ ((D.dyn_ $ pass <$ dragDyn) <$ pure ())
+            D.dyn_ ((D.dyn_ $ pass <$ dragDyn) <$ pure ())
+            D.dyn_ ((D.dyn_ $ pass <$ dragDyn) <$ pure ())
+            D.dyn_ ((D.dyn_ $ pass <$ dragDyn) <$ pure ())
+            D.dyn_ ((D.dyn_ $ pass <$ dragDyn) <$ pure ())
           )
           (AppState (pure mempty) (pure time) dragDyn (pure (FilterState 0 60)))
       stateChanges <- pure $ R.traceEventWith (const "StateChange") stateChanges'
   pure ()
-
-listWidget
-  :: forall t m r e . StandardWidget t m r e => R.Dynamic t DragState -> R.Dynamic t () -> m ()
-listWidget dragStateD list = D.dyn_ ((D.dyn_ $ pass <$ dragStateD) <$ list)
